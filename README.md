@@ -5,7 +5,7 @@
 ## Установка
 
 1. Установите Python 3.8+
-2. Установите зависимости: `pip install -r requirements.txt`
+2. Установить зависимости: `pip install -r requirements.txt`
 3. WebDriver Manager автоматически установит ChromeDriver
 
 ## Структура проекта
@@ -30,11 +30,12 @@ Email: sergey_taldykin_31_025@yandex.ru
 Имя: Sergey
 
   
-## Установка зависимостей
-
+## Установить зависимости
+```bash
 pip install selenium pytest
 
 ## Запуск тестов
 
 Запуск всех тестов: `pytest -v`
+
 
