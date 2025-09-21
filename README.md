@@ -31,12 +31,13 @@ Email: sergey_taldykin_31_025@yandex.ru
 
   
 ## Установить зависимости
-```bash
+
 pip install selenium pytest
 
 ## Запуск тестов
 
 Запуск всех тестов: `pytest -v`
+
 
 
 
