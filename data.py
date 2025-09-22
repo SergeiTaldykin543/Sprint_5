@@ -4,7 +4,6 @@ class TestUser:
     PASSWORD = "123456"
     NAME = "Sergey Taldykin"
 
-    # Метод для возврата данных в виде словаря, если нужен именно такой формат для некоторых фикстур
     @classmethod
     def get_dict(cls):
         return {
