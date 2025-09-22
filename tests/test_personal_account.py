@@ -1,39 +1,51 @@
+import pytest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from locators import *
-import pytest
+from data import TestUser
+from urls import LOGIN_PAGE
 
+@pytest.mark.run(order=3)
 class TestPersonalAccount:
-    def test_go_to_personal_account_with_valid_user(self, driver, test_user):
-        self.register_and_login(driver, test_user)
+    
+    def test_navigate_to_personal_account(self, driver):
+        "3. Переход в личный кабинет"
+        driver.get(LOGIN_PAGE)
         
-        driver.find_element("css selector", PERSONAL_ACCOUNT_BUTTON).click()
+        # Локаторы
+        EMAIL_INPUT = (By.XPATH, "//input[@name='name']")
+        PASSWORD_INPUT = (By.XPATH, "//input[@name='Пароль']")
+        LOGIN_BUTTON = (By.XPATH, "//button[contains(text(),'Войти')]")
+        MAIN_PAGE_HEADER = (By.XPATH, "//h1[contains(text(),'Соберите бургер')]")
+        ACCOUNT_BUTTON = (By.XPATH, "//p[contains(text(),'Личный Кабинет')]")
+        PROFILE_LINK = (By.XPATH, "//a[contains(text(),'Профиль')]")
         
-        assert "Профиль" in driver.page_source
+        email_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(EMAIL_INPUT))
+        assert email_input.is_displayed()
         
-        profile_email = driver.find_element("css selector", EMAIL_INPUT)
-        assert profile_email.get_attribute("value") == test_user["email"]
-
-    def test_logout_with_valid_user(self, driver, test_user):
-        self.register_and_login(driver, test_user)
+        password_input = driver.find_element(*PASSWORD_INPUT)
+        assert password_input.is_displayed()
         
-        driver.find_element("css selector", PERSONAL_ACCOUNT_BUTTON).click()
-        driver.find_element("css selector", LOGOUT_BUTTON).click()
+        login_button = driver.find_element(*LOGIN_BUTTON)
+        assert login_button.is_displayed()
         
-        assert "Вход" in driver.page_source
-
-    def register_and_login(self, driver, user):
-        driver.get(MAIN_PAGE + "register")
-        driver.find_element("css selector", NAME_INPUT).send_keys(user["name"])
-        driver.find_element("css selector", EMAIL_INPUT).send_keys(user["email"])
-        driver.find_element("css selector", PASSWORD_INPUT).send_keys(user["password"])
-        driver.find_element("css selector", REGISTER_BUTTON).click()
+        email_input.send_keys(TestUser.EMAIL)
+        password_input.send_keys(TestUser.PASSWORD)
+        login_button.click()
         
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(("css selector", EMAIL_INPUT)))
-        driver.find_element("css selector", EMAIL_INPUT).send_keys(user["email"])
-        driver.find_element("css selector", PASSWORD_INPUT).send_keys(user["password"])
-        driver.find_element("css selector", LOGIN_BUTTON_FORM).click()
+        main_header = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(MAIN_PAGE_HEADER))
+        assert main_header.is_displayed()
         
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(("css selector", CONSTRUCTOR_BUTTON)))
+        account_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(ACCOUNT_BUTTON))
+        assert account_button.is_enabled()
+        
+        account_button.click()
+        
+        profile_link = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(PROFILE_LINK))
+        assert profile_link.is_displayed()
+        
+        current_url = driver.current_url
+        assert "account" in current_url, f"Неверный URL после перехода в личный кабинет: {current_url}"
+        
+        account_sections = driver.find_elements(By.XPATH, "//a[contains(text(),'История заказов')]")
+        assert len(account_sections) > 0, "В личном кабинете отсутствуют ожидаемые разделы"

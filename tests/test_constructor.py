@@ -1,23 +1,37 @@
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from locators import *
+from selenium.webdriver.common.action_chains import ActionChains
+from urls import MAIN_PAGE
 import pytest
+import time
 
 class TestConstructor:
-    def test_go_to_buns(self, driver):
-        driver.find_element("css selector", BUNS_SECTION).click()
+    
+    BUNS_TAB = (By.XPATH, "//span[text()='Булки']/parent::div")
+    SAUCES_TAB = (By.XPATH, "//span[text()='Соусы']/parent::div")
+    FILLINGS_TAB = (By.XPATH, "//span[text()='Начинки']/parent::div")
+    
+    def wait_for_page_load(self, driver):
+        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tab_tab__1SPyG")))
+        time.sleep(1) 
+    
+    @pytest.mark.parametrize("tab_locator,tab_name", [
+        (BUNS_TAB, "Булки"),
+        (SAUCES_TAB, "Соусы"),
+        (FILLINGS_TAB, "Начинки")
+    ])
+    def test_switch_to_section(self, driver, tab_locator, tab_name):
+        "Тест перехода к разделам конструктора"
+        driver.get(MAIN_PAGE)
+        self.wait_for_page_load(driver)
         
-        active_section = driver.find_element("css selector", ACTIVE_SECTION)
-        assert "Булки" in active_section.text
-
-    def test_go_to_sauces(self, driver):
-        driver.find_element("css selector", SAUCES_SECTION).click()
+        tab = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(tab_locator))
         
-        active_section = driver.find_element("css selector", ACTIVE_SECTION)
-        assert "Соусы" in active_section.text
-
-    def test_go_to_fillings(self, driver):
-        driver.find_element("css selector", FILLINGS_SECTION).click()
+        actions = ActionChains(driver)
+        actions.move_to_element(tab).pause(0.5).click().perform()
         
-        active_section = driver.find_element("css selector", ACTIVE_SECTION)
-        assert "Начинки" in active_section.text
+        WebDriverWait(driver, 5).until(lambda d: "tab_tab_type_current__" in tab.get_attribute('class'))
+        
+        tab_class = tab.get_attribute('class')
+        assert "tab_tab_type_current__" in tab_class, f"Раздел '{tab_name}' не активирован"

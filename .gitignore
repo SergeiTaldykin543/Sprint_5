@@ -1,4 +1,15 @@
-__pycache__/
+pycache/
 *.pyc
 .env
 venv/
+.venv/
+*.log
+chromedriver.log
+.DS_Store
+
+.venv/
+__pycache__/
+*.pyc
+*.log
+*.png
+page_source.html

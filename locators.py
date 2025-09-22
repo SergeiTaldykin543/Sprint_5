@@ -1,27 +1,30 @@
 # Главная страница
-MAIN_PAGE = "https://stellarburgers.nomoreparties.site/"
-CONSTRUCTOR_BUTTON = ".AppHeader_header__link__3D_hX[href='/']"
-PERSONAL_ACCOUNT_BUTTON = ".AppHeader_header__link__3D_hX[href='/account']"
-LOGIN_BUTTON = ".button_button__33qZ0"
+MAIN_TITLE = "//h1[contains(text(),'Соберите бургер')]"
+LOGIN_BUTTON_MAIN = "//button[contains(text(),'Войти в аккаунт')]"
+PERSONAL_ACCOUNT_BUTTON = "//p[contains(text(),'Личный Кабинет')]"
+CONSTRUCTOR_BUTTON = "//p[contains(text(),'Конструктор')]"
+STELLAR_LOGO = "//a[@href='/']"
 
-# Разделы конструктора
-BUNS_SECTION = "div[data-cy='buns']"
-SAUCES_SECTION = "div[data-cy='sauces']"
-FILLINGS_SECTION = "div[data-cy='fillings']"
-ACTIVE_SECTION = ".tab_tab_type_current__2BEPc"
+# Регистрация
+REGISTER_LINK = "//a[contains(text(),'Зарегистрироваться')]"
+NAME_INPUT = "//label[contains(text(),'Имя')]/following-sibling::input"
+EMAIL_INPUT = "//label[contains(text(),'Email')]/following-sibling::input"
+PASSWORD_INPUT = "//label[contains(text(),'Пароль')]/following-sibling::input"
+REGISTER_BUTTON = "//button[contains(text(),'Зарегистрироваться')]"
 
-# Формы
-EMAIL_INPUT = "input[name='email']"
-PASSWORD_INPUT = "input[name='password']"
-NAME_INPUT = "input[name='name']"
-LOGIN_BUTTON_FORM = "button[type='submit']"
-REGISTER_BUTTON = "button[type='submit']"
-
-# Ссылки
-REGISTER_LINK = "a[href='/register']"
-LOGIN_LINK = "a[href='/login']"
-FORGOT_PASSWORD_LINK = "a[href='/forgot-password']"
+# Вход
+LOGIN_BUTTON = "//button[contains(text(),'Войти')]"
+LOGIN_LINK = "//a[contains(text(),'Войти')]"
 
 # Личный кабинет
-LOGOUT_BUTTON = "button.Account_button__14Yp3"
-PROFILE_NAME = "input[name='name']"
+PROFILE_LINK = "//a[contains(text(),'Профиль')]"
+LOGOUT_BUTTON = "//button[contains(text(),'Выход')]"
+
+# Конструктор
+BUNS_SECTION = "//span[contains(text(),'Булки')]"
+SAUCES_SECTION = "//span[contains(text(),'Соусы')]"
+FILLINGS_SECTION = "//span[contains(text(),'Начинки')]"
+ACTIVE_SECTION = "//div[contains(@class,'tab_tab_type_current__')]"
+
+# Восстановление пароля
+FORGOT_PASSWORD_LINK = "//a[contains(text(),'Восстановить пароль')]"

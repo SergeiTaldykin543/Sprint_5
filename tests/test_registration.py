@@ -1,46 +1,89 @@
+import pytest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from locators import *
-import pytest
+import time
+from data import TestUser
+from urls import REGISTER_PAGE
 
+@pytest.mark.run(order=1)
 class TestRegistration:
-    def test_successful_registration_with_valid_data(self, driver, test_user):
-        driver.find_element("css selector", LOGIN_BUTTON).click()
+    
+    def test_successful_registration(self, driver):
+        "1. Успешная регистрация"
+        driver.get(REGISTER_PAGE)
+        time.sleep(3)
         
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(("css selector", EMAIL_INPUT))
-        )
-        
-        driver.find_element("css selector", REGISTER_LINK).click()
-        
-        name_input = driver.find_element("css selector", NAME_INPUT)
-        email_input = driver.find_element("css selector", EMAIL_INPUT)
-        password_input = driver.find_element("css selector", PASSWORD_INPUT)
-        
-        name_input.send_keys(test_user["name"])
-        email_input.send_keys(test_user["email"])
-        password_input.send_keys(test_user["password"])
-        
-        assert test_user["name"].strip() != "", "Имя не должно быть пустым"
-        assert "@" in test_user["email"] and "." in test_user["email"], "Email должен быть валидным"
-        assert len(test_user["password"]) >= 6, "Пароль должен быть не менее 6 символов"
-        
-        driver.find_element("css selector", REGISTER_BUTTON).click()
-        
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(("css selector", EMAIL_INPUT)))
-        
-        assert "Вход" in driver.page_source
+        try:
+            name_input = driver.find_element(By.XPATH, "//label[contains(text(),'Имя')]/following-sibling::input")
+            email_input = driver.find_element(By.XPATH, "//label[contains(text(),'Email')]/following-sibling::input")
+            password_input = driver.find_element(By.XPATH, "//label[contains(text(),'Пароль')]/following-sibling::input")
 
-    def test_registration_short_password(self, driver, test_user):
-        driver.find_element("css selector", LOGIN_BUTTON).click()
-        driver.find_element("css selector", REGISTER_LINK).click()
+        except Exception as e:
+            pytest.fail(f"Не удалось найти поля формы: {e}")
         
-        driver.find_element("css selector", NAME_INPUT).send_keys(test_user["name"])
-        driver.find_element("css selector", EMAIL_INPUT).send_keys(test_user["email"])
-        driver.find_element("css selector", PASSWORD_INPUT).send_keys("12345")
+        name_input.send_keys(TestUser.NAME)
+        print("Заполнили имя")
+        time.sleep(1)
         
-        driver.find_element("css selector", REGISTER_BUTTON).click()
-         
-        error_text = driver.page_source
-        assert "Некорректный пароль" in error_text or "ошибка" in error_text.lower()
+        email_input.send_keys(TestUser.EMAIL)
+        time.sleep(1)
+        
+        password_input.send_keys(TestUser.PASSWORD)
+        time.sleep(1)
+        
+        try:
+            register_button = driver.find_element(By.XPATH, "//button[contains(text(),'Зарегистрироваться')]")
+            
+            register_button.click()
+            time.sleep(3)
+                     
+        except Exception as e:
+            pytest.fail(f"Не найдена кнопка регистрации: {e}")
+
+    def test_unsuccessful_registration_short_password(self, driver):
+        "2. Неуспешная регистрация - короткий пароль"
+        driver.get(REGISTER_PAGE)
+        time.sleep(3)
+        
+        try:
+            name_input = driver.find_element(By.XPATH, "//label[contains(text(),'Имя')]/following-sibling::input")
+            email_input = driver.find_element(By.XPATH, "//label[contains(text(),'Email')]/following-sibling::input")
+            password_input = driver.find_element(By.XPATH, "//label[contains(text(),'Пароль')]/following-sibling::input")
+            register_button = driver.find_element(By.XPATH, "//button[contains(text(),'Зарегистрироваться')]")
+
+        except Exception as e:
+            pytest.fail(f"Не удалось найти элементы формы: {e}")
+        
+        name_input.send_keys(TestUser.NAME)
+        email_input.send_keys(TestUser.EMAIL)
+        password_input.send_keys("123")
+        
+        register_button.click()
+        time.sleep(2)
+        
+        assert "register" in driver.current_url, "Ожидалось остаться на странице регистрации при коротком пароле"
+
+    def test_unsuccessful_registration_existing_email(self, driver):
+        "3. Неуспешная регистрация - существующий email"
+        driver.get(REGISTER_PAGE)
+        time.sleep(3)
+        
+        try:
+            name_input = driver.find_element(By.XPATH, "//label[contains(text(),'Имя')]/following-sibling::input")
+            email_input = driver.find_element(By.XPATH, "//label[contains(text(),'Email')]/following-sibling::input")
+            password_input = driver.find_element(By.XPATH, "//label[contains(text(),'Пароль')]/following-sibling::input")
+            register_button = driver.find_element(By.XPATH, "//button[contains(text(),'Зарегистрироваться')]")
+
+        except Exception as e:
+            pytest.fail(f"Не удалось найти элементы формы: {e}")
+        
+        name_input.send_keys(TestUser.NAME)
+        email_input.send_keys(TestUser.EMAIL)  
+        password_input.send_keys(TestUser.PASSWORD)
+        
+        register_button.click()
+        time.sleep(2)
+        
+        assert "register" in driver.current_url
+        

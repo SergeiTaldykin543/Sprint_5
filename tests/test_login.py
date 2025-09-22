@@ -1,56 +1,61 @@
+import pytest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from locators import *
-import pytest
+from data import TestUser
+from urls import LOGIN_PAGE, REGISTER_PAGE, MAIN_PAGE
 
+@pytest.mark.run(order=2)
 class TestLogin:
-    def test_login_with_valid_credentials(self, driver, test_user):
-        self.register_user(driver, test_user)
-        
+    
+    def test_login_from_main_button(self, driver):
+        "2.1 Вход по кнопке «Войти в аккаунт» на главной"
         driver.get(MAIN_PAGE)
         
-        driver.find_element("css selector", LOGIN_BUTTON).click()
+        login_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Войти в аккаунт')]")))
+        login_button.click()
         
-        self.login_user(driver, test_user)
+        email_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@name='name']")))
+        password_input = driver.find_element(By.XPATH, "//input[@name='Пароль']")
+        login_button = driver.find_element(By.XPATH, "//button[contains(text(),'Войти')]")
         
-        assert "Оформить заказ" in driver.page_source
+        email_input.send_keys(TestUser.EMAIL)
+        password_input.send_keys(TestUser.PASSWORD)
+        login_button.click()
         
-        assert test_user["email"] == "sergey_taldykin_31@yandex.ru"
-        assert test_user["password"] == "123456"
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//h1[contains(text(),'Соберите бургер')]")))
 
-    def test_login_from_main_button(self, driver, test_user):
-        self.register_user(driver, test_user)
-        driver.get(MAIN_PAGE)
+    def test_login_from_personal_account(self, driver):
+        "2.2 Вход через кнопку «Личный кабинет»"
+        driver.get(LOGIN_PAGE)
         
-        driver.find_element("css selector", LOGIN_BUTTON).click()
-        self.login_user(driver, test_user)
-        assert "Оформить заказ" in driver.page_source
+        account_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//p[contains(text(),'Личный Кабинет')]")))
+        account_button.click()
+        
+        email_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@name='name']")))
+        password_input = driver.find_element(By.XPATH, "//input[@name='Пароль']")
+        login_button = driver.find_element(By.XPATH, "//button[contains(text(),'Войти')]")
+        
+        email_input.send_keys(TestUser.EMAIL)
+        password_input.send_keys(TestUser.PASSWORD)
+        login_button.click()
+        
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//h1[contains(text(),'Соберите бургер')]")))
 
-    def test_login_from_personal_account(self, driver, test_user):
-        self.register_user(driver, test_user)
-        driver.get(MAIN_PAGE)
+    def test_login_from_registration_form(self, driver):
+        "2.3 Вход через кнопку в форме регистрации"
+        driver.get(REGISTER_PAGE)
         
-        driver.find_element("css selector", PERSONAL_ACCOUNT_BUTTON).click()
-        self.login_user(driver, test_user)
-        assert "Профиль" in driver.page_source
+        login_link = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Войти')]")))
+        login_link.click()
+        
+        email_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@name='name']")))
+        password_input = driver.find_element(By.XPATH, "//input[@name='Пароль']")
+        login_button = driver.find_element(By.XPATH, "//button[contains(text(),'Войти')]")
+        
+        email_input.send_keys(TestUser.EMAIL)
+        password_input.send_keys(TestUser.PASSWORD)
+        login_button.click()
+        
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//h1[contains(text(),'Соберите бургер')]")))
 
-    def register_user(self, driver, user):
-        driver.get(MAIN_PAGE + "register")
-        
-        driver.find_element("css selector", NAME_INPUT).send_keys(user["name"])
-        driver.find_element("css selector", EMAIL_INPUT).send_keys(user["email"])
-        driver.find_element("css selector", PASSWORD_INPUT).send_keys(user["password"])
-        driver.find_element("css selector", REGISTER_BUTTON).click()
-        
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(("css selector", EMAIL_INPUT))
-        )
-
-    def login_user(self, driver, user):
-        driver.find_element("css selector", EMAIL_INPUT).send_keys(user["email"])
-        driver.find_element("css selector", PASSWORD_INPUT).send_keys(user["password"])
-        driver.find_element("css selector", LOGIN_BUTTON_FORM).click()
-        
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(("css selector", CONSTRUCTOR_BUTTON))
-        )
