@@ -1,51 +1,71 @@
 import pytest
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from data import TestUser
+from locators import PersonalAccountLocators, AuthLocators, CommonLocators
 from urls import LOGIN_PAGE
+from data import TestUser
 
-@pytest.mark.run(order=3)
 class TestPersonalAccount:
-    
-    def test_navigate_to_personal_account(self, driver):
-        "3. Переход в личный кабинет"
+    def login_user(self, driver):
+        "Вспомогательный метод для авторизации пользователя"
         driver.get(LOGIN_PAGE)
         
-        # Локаторы
-        EMAIL_INPUT = (By.XPATH, "//input[@name='name']")
-        PASSWORD_INPUT = (By.XPATH, "//input[@name='Пароль']")
-        LOGIN_BUTTON = (By.XPATH, "//button[contains(text(),'Войти')]")
-        MAIN_PAGE_HEADER = (By.XPATH, "//h1[contains(text(),'Соберите бургер')]")
-        ACCOUNT_BUTTON = (By.XPATH, "//p[contains(text(),'Личный Кабинет')]")
-        PROFILE_LINK = (By.XPATH, "//a[contains(text(),'Профиль')]")
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(AuthLocators.EMAIL_INPUT)).send_keys(TestUser.EMAIL)
         
-        email_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(EMAIL_INPUT))
-        assert email_input.is_displayed()
+        driver.find_element(*AuthLocators.PASSWORD_INPUT).send_keys(TestUser.PASSWORD)
+        driver.find_element(*AuthLocators.LOGIN_BUTTON).click()
+
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(CommonLocators.MAIN_PAGE_HEADER))
+
+
+    def test_navigate_to_personal_account(self, driver):
+        "Переход в личный кабинет"
+        self.login_user(driver)
         
-        password_input = driver.find_element(*PASSWORD_INPUT)
-        assert password_input.is_displayed()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(CommonLocators.PERSONAL_ACCOUNT_BUTTON)).click()
+
+        profile_link = WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located(PersonalAccountLocators.PROFILE_LINK))
         
-        login_button = driver.find_element(*LOGIN_BUTTON)
-        assert login_button.is_displayed()
-        
-        email_input.send_keys(TestUser.EMAIL)
-        password_input.send_keys(TestUser.PASSWORD)
-        login_button.click()
-        
-        main_header = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(MAIN_PAGE_HEADER))
-        assert main_header.is_displayed()
-        
-        account_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(ACCOUNT_BUTTON))
-        assert account_button.is_enabled()
-        
-        account_button.click()
-        
-        profile_link = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(PROFILE_LINK))
         assert profile_link.is_displayed()
+
+
+    def test_logout_from_personal_account(self, driver):
+        "Выход из аккаунта"
+        self.login_user(driver)
         
-        current_url = driver.current_url
-        assert "account" in current_url, f"Неверный URL после перехода в личный кабинет: {current_url}"
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(CommonLocators.PERSONAL_ACCOUNT_BUTTON)).click()
+
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(PersonalAccountLocators.LOGOUT_BUTTON)).click()
+
+        login_button = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(AuthLocators.LOGIN_BUTTON))
         
-        account_sections = driver.find_elements(By.XPATH, "//a[contains(text(),'История заказов')]")
-        assert len(account_sections) > 0, "В личном кабинете отсутствуют ожидаемые разделы"
+        assert login_button.is_displayed()
+
+
+    def test_profile_name_displayed_correctly(self, driver):
+        "Проверка отображения имени в профиле"
+        self.login_user(driver)
+        
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(CommonLocators.PERSONAL_ACCOUNT_BUTTON)).click()
+
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(PersonalAccountLocators.PROFILE_LINK))
+
+        name_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(PersonalAccountLocators.PROFILE_NAME_INPUT))
+        
+        actual_name = name_input.get_attribute("value")
+        assert actual_name == TestUser.NAME, f"Expected name: {TestUser.NAME}, but got: {actual_name}"
+
+
+    def test_profile_email_displayed_correctly(self, driver):
+        "Проверка отображения email в профиле"
+        self.login_user(driver)
+        
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(CommonLocators.PERSONAL_ACCOUNT_BUTTON)).click()
+
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(PersonalAccountLocators.PROFILE_LINK))
+
+        email_input = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(PersonalAccountLocators.PROFILE_EMAIL_INPUT))
+        
+        actual_email = email_input.get_attribute("value")
+        assert actual_email == TestUser.EMAIL, f"Expected email: {TestUser.EMAIL}, but got: {actual_email}"
